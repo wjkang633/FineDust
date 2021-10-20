@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        bindViews()
         initVariables()
         //권한 요청
         requestLocationPermissions()
@@ -48,6 +49,12 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         cancellationTokenSource?.cancel()
         scope.cancel()
+    }
+
+    private fun bindViews(){
+        binding.refreshLayout.setOnRefreshListener {
+            fetchAirQualityData()
+        }
     }
 
     private fun initVariables() {
@@ -110,6 +117,7 @@ class MainActivity : AppCompatActivity() {
                         displayAirQualityData(monitoringStation, airQuality!!)
                     } catch (exception: Exception) {
                         binding.errorDescriptionTextView.visibility = View.VISIBLE
+                        binding.contentsLayout.alpha = 0F
                     } finally {
                         binding.progressBar.visibility = View.GONE
                         binding.refreshLayout.isRefreshing = false
@@ -119,6 +127,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun displayAirQualityData(monitoringStation: MonitoringStation, airQuality: AirQuality) {
+        binding.contentsLayout
+            .animate()
+            .alpha(1F)
+            .start()
+
         binding.measuringStationNameTextView.text = monitoringStation.stationName
         binding.measuringStationAddressTextView.text = monitoringStation.addr
 
