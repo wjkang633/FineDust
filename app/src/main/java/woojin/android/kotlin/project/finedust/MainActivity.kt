@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
@@ -20,6 +21,8 @@ import woojin.android.kotlin.project.finedust.data.models.airquality.AirQuality
 import woojin.android.kotlin.project.finedust.data.models.airquality.Grade
 import woojin.android.kotlin.project.finedust.data.models.monitoringstation.MonitoringStation
 import woojin.android.kotlin.project.finedust.databinding.ActivityMainBinding
+import java.lang.Exception
+import java.security.spec.ECField
 
 class MainActivity : AppCompatActivity() {
 
@@ -93,13 +96,24 @@ class MainActivity : AppCompatActivity() {
             .addOnSuccessListener { location ->
                 //코루틴 시작
                 scope.launch {
-                    val monitoringStation =
-                        Repository.getNearbyMonitoringStation(location.latitude, location.longitude)
+                    binding.errorDescriptionTextView.visibility = View.GONE
+                    try {
+                        val monitoringStation =
+                            Repository.getNearbyMonitoringStation(
+                                location.latitude,
+                                location.longitude
+                            )
 
-                    val airQuality =
-                        Repository.getLatestAirQualityData(monitoringStation!!.stationName!!)
+                        val airQuality =
+                            Repository.getLatestAirQualityData(monitoringStation!!.stationName!!)
 
-                    displayAirQualityData(monitoringStation, airQuality!!)
+                        displayAirQualityData(monitoringStation, airQuality!!)
+                    } catch (exception: Exception) {
+                        binding.errorDescriptionTextView.visibility = View.VISIBLE
+                    } finally {
+                        binding.progressBar.visibility = View.GONE
+                        binding.refreshLayout.isRefreshing = false
+                    }
                 }
             }
     }
