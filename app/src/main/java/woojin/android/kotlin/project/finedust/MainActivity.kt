@@ -3,6 +3,7 @@ package woojin.android.kotlin.project.finedust
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -72,6 +73,14 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun requestBackgroundLocationPermissions() {
+        ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                REQUEST_BACKGROUND_ACCESS_LOCATION_PERMISSIONS
+        )
+    }
+
     @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -83,11 +92,27 @@ class MainActivity : AppCompatActivity() {
         val locationPermissionGranted =
             requestCode == REQUEST_ACCESS_LOCATION_PERMISSIONS && grantResults[0] == PackageManager.PERMISSION_GRANTED
 
-        if (!locationPermissionGranted) {
-            finish()
-        } else {
-            //fetchData
-            fetchAirQualityData()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+            val backgroundLocationPermissionGranted =
+                    requestCode == REQUEST_BACKGROUND_ACCESS_LOCATION_PERMISSIONS && grantResults[0] == PackageManager.PERMISSION_GRANTED
+
+            if (!backgroundLocationPermissionGranted){
+                //요청
+                requestBackgroundLocationPermissions()
+            }
+            else
+            {
+                fetchAirQualityData()
+            }
+        }
+        else
+        {
+            if (!locationPermissionGranted) {
+                finish()
+            } else {
+                //fetchData
+                fetchAirQualityData()
+            }
         }
     }
 
@@ -175,5 +200,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val REQUEST_ACCESS_LOCATION_PERMISSIONS = 100
+        const val REQUEST_BACKGROUND_ACCESS_LOCATION_PERMISSIONS = 101
     }
 }
